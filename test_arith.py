@@ -59,6 +59,64 @@ def test_counting_signals():
     assert COUNTING_SIGNALS(True, True, True, True) == 4
 
 
+def test_half_adder():
+    assert HALF_ADDER(False, False) == (False, False)
+    assert HALF_ADDER(True, False) == (True, False)
+    assert HALF_ADDER(False, True) == (True, False)
+    assert HALF_ADDER(True, True) == (False, True)
+
+
+def test_full_adder():
+    assert FULL_ADDER(False, False, False) == (False, False)
+    assert FULL_ADDER(True, False, False) == (True, False)
+    assert FULL_ADDER(False, True, False) == (True, False)
+    assert FULL_ADDER(True, True, False) == (False, True)
+    assert FULL_ADDER(False, False, True) == (True, False)
+    assert FULL_ADDER(True, False, True) == (False, True)
+    assert FULL_ADDER(False, True, True) == (False, True)
+    assert FULL_ADDER(True, True, True) == (True, True)
+
+
+def test_bit_switch():
+    assert BIT_SWITCH(False, False) is False
+    assert BIT_SWITCH(True, False) is False
+    assert BIT_SWITCH(False, True) is False
+    assert BIT_SWITCH(True, True) is True
+
+
+def test_bit_inverter():
+    assert BIT_INVERTER(False, False) is False
+    assert BIT_INVERTER(True, False) is True
+    assert BIT_INVERTER(False, True) is True
+    assert BIT_INVERTER(True, True) is False
+
+
+def test_byte_or():
+    for i in range(0, 256):
+        for j in range(0, 256):
+            assert BYTE_OR(Byte(i), Byte(j)).value == i | j
+
+
+# def test_byte_not():
+#     for i in range(0, 256):
+#         assert BYTE_NOT(Byte(i)) == ~i
+
+
+def test_byte_add():
+    for i in range(0, 256):
+        for j in range(0, 256):
+            for z in [False, True]:
+                bv, c = BYTE_ADD(Byte(i), Byte(j), z)
+                dv, m = divmod(i + j + int(z), 256)
+                assert (bv.value, int(c)) == (m, dv)
+
+
+def test_byte_switch():
+    for i in range(0, 256):
+        assert BYTE_SWITCH(Byte(i), False).value == 0
+        assert BYTE_SWITCH(Byte(i), True).value == i
+
+
 def main():
     for f in globals():
         if f.startswith("test_"):
