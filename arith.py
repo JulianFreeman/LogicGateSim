@@ -91,6 +91,12 @@ def BIT_INVERTER(i: bool, c: bool) -> bool:
     return XOR(i, c)
 
 
+def BIT_SELECTOR(i1: bool, i2: bool, c: bool) -> bool:
+    """if c is on, the output is i1, or is i2"""
+    # [8] NAND
+    return OR(BIT_SWITCH(i1, c), BIT_SWITCH(i2, NOT(c)))
+
+
 Bit8 = tuple[bool, ...]  # actually 8 bools
 
 
@@ -146,19 +152,20 @@ class Byte(object):
     def __abs__(self):
         return Byte(abs(self.value), signed=False)
 
-    def to_signed(self):
-        return Byte(self.value, signed=True)
-
-    def to_unsigned(self):
-        # maybe fail
-        return Byte(self.value, signed=False)
-
     def __repr__(self):
         p = "+" if self.signed and self.value >= 0 else ""
         return f"Byte({p}{self.value})"
 
     def __str__(self):
         return self.__repr__()
+
+    def __eq__(self, other):
+        if isinstance(other, Byte):
+            return (self.value == other.value) and (self.signed == other.signed)
+        elif isinstance(other, int):
+            return self.value == other
+        else:
+            raise TypeError("the other one is not a Byte or int")
 
 
 def _byte_to_bit8(i: Byte) -> Bit8:
@@ -221,5 +228,63 @@ def SIGNED_NEGATOR(i: Byte) -> Byte:
     # return _bit8_to_byte(BIT8_ADD_1(BIT8_NOT(_byte_to_bit8(i)))[0], i.signed)
     return BYTE_ADD(BYTE_NOT(i), Byte(0), True)[0]
 
+
+def THE_BUS(i1: Byte, i2: Byte, c1: bool, c2: bool) -> tuple[Byte, Byte]:
+    """
+    if c1 is on, the output is i1, or is i2;
+    if c2 is on, the result is (output, 0), or is (0, output)
+    """
+    b = BYTE_SELECTOR(i1, i2, c1)
+    return BYTE_SWITCH(b, c2), BYTE_SWITCH(b, NOT(c2))
+
+
+Bits = tuple[bool, ...]  # a sequence of bools, not sure how many
+
+
+def DELAY_ONE():
+    """delay one tick
+
+    which is, output the bit of last tick
+    """
+    last = False
+
+    def inner(i: bool):
+        nonlocal last
+        e = last
+        last = i
+        return e
+
+    return inner
+
+
+def ODD_TICKS():
+    """on only when the nth of tick is odd"""
+    last = False
+
+    def inner() -> bool:
+        nonlocal last
+        r = last
+        last = NOT(r)
+        return r
+
+    return inner
+
+
+def SAVE_GRACEFULLY():
+    """actually a delay one  gated latch"""
+    last = False
+
+    def inner(e: bool, s: bool) -> bool:
+        """e: enable, s: save
+
+        yeah, it's actually a selector,
+        if enabled, select the input/save, else, select the reserved
+        """
+        nonlocal last
+        r = last
+        last = BIT_SELECTOR(s, r, e)
+        return r
+
+    return inner
 
 

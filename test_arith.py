@@ -158,6 +158,52 @@ def test_bit_inverter():
 #         assert SIGNED_NEGATOR(Byte(i, True)).value == -i
 
 
+# def test_the_bus():
+#     for i in range(0, 256):
+#         for j in range(0, 256):
+#             x, y = Byte(i, False), Byte(j, False)
+#             assert THE_BUS(x, y, False, False) == (0, y)
+#             assert THE_BUS(x, y, True, False) == (0, x)
+#             assert THE_BUS(x, y, False, True) == (y, 0)
+#             assert THE_BUS(x, y, True, True) == (x, 0)
+
+    # for i in range(-128, 128):
+    #     for j in range(-128, 128):
+    #         x, y = Byte(i, True), Byte(j, True)
+    #         assert THE_BUS(x, y, False, False) == (0, y)
+    #         assert THE_BUS(x, y, True, False) == (0, x)
+    #         assert THE_BUS(x, y, False, True) == (y, 0)
+    #         assert THE_BUS(x, y, True, True) == (x, 0)
+
+
+def test_delay_one():
+    a = (False, True, True, False, False, False, True, True, True)
+    b = []
+    do = DELAY_ONE()
+    for e in a:
+        b.append(do(e))
+    assert tuple(b) == (False, False, True, True, False, False, False, True, True)
+
+
+def test_odd_ticks():
+    ot = ODD_TICKS()
+    b = []
+    for _ in range(9):
+        b.append(ot())
+    assert tuple(b) == (False, True, False, True, False, True, False, True, False)
+
+
+def test_save_gracefully():
+    enable = (True, True, True, True, False, False, True, True, True, False, False, True)
+    save = (True, True, False, False, False, True, False, True, True, True, False, False)
+    desired = (False, True, True, False, False, False, False, False, True, True, True, True)
+    sg = SAVE_GRACEFULLY()
+    b = []
+    for i in range(len(save)):
+        b.append(sg(enable[i], save[i]))
+    assert tuple(b) == desired
+
+
 
 def main():
     for f in globals():
